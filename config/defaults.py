@@ -14,7 +14,7 @@ import os
 
 
 def _appdata_path(filename: str) -> str:
-    """
+    r"""
     Resolve a filename to %APPDATA%\Numa\ on Windows.
     Falls back to project root if APPDATA is unavailable.
     Creates the directory if it doesn't exist.
