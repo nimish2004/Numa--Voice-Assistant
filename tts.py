@@ -51,8 +51,20 @@ def speech_just_ended() -> float:
 
 # ── pygame mixer ──────────────────────────────────────────────────────────────
 
-pygame.mixer.init()
+_mixer_ready = False
 _playback_lock = threading.Lock()
+
+
+def _ensure_mixer():
+    """Deferred initialization of pygame.mixer to handle systems without audio."""
+    global _mixer_ready
+    if _mixer_ready:
+        return
+    try:
+        pygame.mixer.init()
+        _mixer_ready = True
+    except Exception as e:
+        print(f"[TTS] pygame.mixer init failed: {e}")
 
 
 # ── Persistent asyncio event loop (edge-tts) ──────────────────────────────────
@@ -97,6 +109,7 @@ async def _synthesise(text: str, path: str):
 
 def _play_mp3(path: str):
     """Play an MP3 file via pygame, blocking until done or interrupted."""
+    _ensure_mixer()
     with _playback_lock:
         try:
             pygame.mixer.music.load(path)
@@ -116,7 +129,8 @@ def _speak_edge(text: str) -> bool:
             tmp_path = f.name
 
         future = asyncio.run_coroutine_threadsafe(_synthesise(text, tmp_path), _loop)
-        future.result(timeout=10)
+        timeout = settings.get("request_timeout_sec", 10)
+        future.result(timeout=timeout)
 
         _play_mp3(tmp_path)
         return True
@@ -181,12 +195,14 @@ def interrupt():
     Called by wakeword.py when wake word fires mid-speech.
     """
     global _speech_ended_at
-    try:
-        if pygame.mixer.music.get_busy():
-            pygame.mixer.music.stop()
-            pygame.mixer.music.unload()
-    except Exception:
-        pass
+    _ensure_mixer()
+    with _playback_lock:
+        try:
+            if pygame.mixer.music.get_busy():
+                pygame.mixer.music.stop()
+                pygame.mixer.music.unload()
+        except Exception:
+            pass
     # Mark speech as ended so the silence window starts from now
     _speech_ended_at = time.time()
 

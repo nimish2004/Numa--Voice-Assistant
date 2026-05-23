@@ -60,7 +60,7 @@ def _save(history: list):
         if os.path.exists(tmp):
             try:
                 os.remove(tmp)
-            except:
+            except OSError:
                 pass
 
 

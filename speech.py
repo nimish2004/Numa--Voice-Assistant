@@ -34,9 +34,9 @@ def _cfg(key: str):
 
 # ── Whisper model ─────────────────────────────────────────────────────────────
 
-print("🔄  Loading Whisper model...")
+print("[Loading] Whisper model...")
 _whisper_model = whisper.load_model(settings.get("whisper_model"))
-print("✅  Whisper ready.")
+print("[OK] Whisper ready.")
 
 # ── Calibration ───────────────────────────────────────────────────────────────
 
@@ -45,7 +45,7 @@ def _run_calibration() -> tuple[float, float]:
     Sample ambient noise for ~1 second and compute thresholds.
     Returns (silence_threshold, mic_off_threshold).
     """
-    print("🔧  Calibrating microphone — stay silent...")
+    print("[Calibrating] Microphone — stay silent...")
     samples = []
 
     for _ in range(15):
@@ -83,7 +83,7 @@ def _load_calibration() -> tuple[float, float] | None:
             data = json.load(f)
         st = data["silence_threshold"]
         mo = data["mic_off_threshold"]
-        print(f"✅  Calibration loaded from cache (threshold: {st:.6f})")
+        print(f"[OK] Calibration loaded from cache (threshold: {st:.6f})")
         return st, mo
     except Exception:
         return None
@@ -214,4 +214,4 @@ def recalibrate():
     """
     global SILENCE_THRESHOLD, MIC_OFF_THRESHOLD
     SILENCE_THRESHOLD, MIC_OFF_THRESHOLD = calibrate(force=True)
-    print("✅  Recalibration complete.")
+    print("[OK] Recalibration complete.")

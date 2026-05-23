@@ -35,7 +35,7 @@ DEFAULTS: dict = {
 
     # ── LLM ───────────────────────────────────────────────────────────────────
     "llm_model"             : "gemini-2.0-flash-lite",
-    "llm_temperature"       : 0,
+    "llm_temperature"       : 0.0,
     "llm_context_messages"  : 6,        # recent messages sent to LLM
 
     # ── Memory ────────────────────────────────────────────────────────────────
@@ -52,6 +52,6 @@ DEFAULTS: dict = {
     "request_timeout_sec"   : 6,
 
     # ── App ───────────────────────────────────────────────────────────────────
-    "startup_greeting"      : "Hello! I am Numa, your personal voice assistant. Say Alexa to wake me up.",
+    "startup_greeting"      : "Hello! I am Numa, your personal voice assistant. Say Numa to wake me up.",
     "log_level"             : "INFO",   # DEBUG | INFO | WARNING
 }

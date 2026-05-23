@@ -123,13 +123,13 @@ def lock_laptop(data: dict):
 
 
 def shutdown(data: dict):
-    delay = str(_cfg("shutdown_delay_sec"))
+    delay = str(_cfg("shutdown_delay_sec") or 5)
     speak(f"Shutting down in {delay} seconds. Save your work.")
     subprocess.run(["shutdown", "/s", "/t", delay], shell=False, check=False)
 
 
 def restart(data: dict):
-    delay = str(_cfg("shutdown_delay_sec"))
+    delay = str(_cfg("shutdown_delay_sec") or 5)
     speak(f"Restarting in {delay} seconds.")
     subprocess.run(["shutdown", "/r", "/t", delay], shell=False, check=False)
 

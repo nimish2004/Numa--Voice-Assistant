@@ -77,7 +77,6 @@ def on_wake():
 
         if not text or len(text.split()) < 2:
             print("[Numa] Too short — ignoring.")
-            _emit(numa_signals.status_changed, "idle")
             return
 
         print(f"[Numa] Heard: {text}")
@@ -95,7 +94,6 @@ def on_wake():
         if rtype == "task":
             # System actions run directly in this thread — correct
             handle_intent(result)
-            _emit(numa_signals.status_changed, "idle")
 
         elif rtype == "chat":
             reply = result.get("response", "")
@@ -103,7 +101,6 @@ def on_wake():
                 _emit(numa_signals.status_changed, "speaking")
                 _emit(numa_signals.response_spoken, reply)
                 speak(reply)
-            _emit(numa_signals.status_changed, "idle")
 
     except Exception as e:
         print(f"[Numa] Error in on_wake: {e}")

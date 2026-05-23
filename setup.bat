@@ -85,28 +85,41 @@ echo  [OK] Dependencies installed.
 echo.
 
 REM ── STEP 6: Download wake word models ────────────────────────────────────
-echo  [6/7] Installing wake word model...
+echo  [6/7] Installing wake word models...
 set MODEL_DEST=.venv\Lib\site-packages\openwakeword\resources\models
-set BUNDLED=assets\models\alexa_v0.1.onnx
+set BUNDLED=assests\models\alexa_v0.1.onnx
+
+if not exist "%MODEL_DEST%" mkdir "%MODEL_DEST%"
 
 if exist "%BUNDLED%" (
-    echo  Copying bundled model...
-    if not exist "%MODEL_DEST%" mkdir "%MODEL_DEST%"
+    echo  Copying bundled alexa model...
     copy /Y "%BUNDLED%" "%MODEL_DEST%\alexa_v0.1.onnx" >nul
-    echo  [OK] Model installed from bundle.
+    echo  [OK] Alexa model installed from bundle.
 ) else (
-    echo  Downloading from internet...
-    %VENV_PYTHON% -c "import openwakeword; openwakeword.utils.download_models()" 2>nul
+    echo  Downloading alexa model...
+    %VENV_PYTHON% -c "import urllib.request; urllib.request.urlretrieve('https://github.com/dscripka/openWakeWord/releases/download/v0.5.1/alexa_v0.1.onnx', r'%MODEL_DEST%\alexa_v0.1.onnx')" >nul 2>&1
     if errorlevel 1 (
-        echo  Trying direct GitHub download...
-        %VENV_PYTHON% -c "import urllib.request, os; os.makedirs(r'.venv\Lib\site-packages\openwakeword\resources\models', exist_ok=True); urllib.request.urlretrieve('https://github.com/dscripka/openWakeWord/releases/download/v0.1.1/alexa_v0.1.onnx', r'.venv\Lib\site-packages\openwakeword\resources\models\alexa_v0.1.onnx'); print('[OK] Downloaded.')"
-        if errorlevel 1 (
-            echo  [WARNING] Auto-download failed.
-            echo  Manual fix: copy alexa_v0.1.onnx to %MODEL_DEST%\
-        )
+        echo  [WARNING] Failed to download alexa model
     ) else (
-        echo  [OK] Models downloaded.
+        echo  [OK] Alexa model downloaded.
     )
+)
+
+REM Download required preprocessing models
+echo  Downloading melspectrogram preprocessing model...
+%VENV_PYTHON% -c "import urllib.request; urllib.request.urlretrieve('https://github.com/dscripka/openWakeWord/releases/download/v0.5.1/melspectrogram.onnx', r'%MODEL_DEST%\melspectrogram.onnx')" >nul 2>&1
+if errorlevel 1 (
+    echo  [WARNING] Failed to download melspectrogram model
+) else (
+    echo  [OK] Melspectrogram model downloaded.
+)
+
+echo  Downloading embedding model...
+%VENV_PYTHON% -c "import urllib.request; urllib.request.urlretrieve('https://github.com/dscripka/openWakeWord/releases/download/v0.5.1/embedding_model.onnx', r'%MODEL_DEST%\embedding_model.onnx')" >nul 2>&1
+if errorlevel 1 (
+    echo  [WARNING] Failed to download embedding model
+) else (
+    echo  [OK] Embedding model downloaded.
 )
 echo.
 

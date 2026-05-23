@@ -110,6 +110,7 @@ def cancel_timer(data: dict):
 _reminders: list[dict] = []
 _reminders_lock = threading.Lock()
 _reminder_thread_started = False
+_reminder_start_lock = threading.Lock()
 
 
 def _reminder_loop():
@@ -134,10 +135,11 @@ def _reminder_loop():
 
 def _ensure_reminder_thread():
     global _reminder_thread_started
-    if not _reminder_thread_started:
-        t = threading.Thread(target=_reminder_loop, name="ReminderLoop", daemon=True)
-        t.start()
-        _reminder_thread_started = True
+    with _reminder_start_lock:
+        if not _reminder_thread_started:
+            t = threading.Thread(target=_reminder_loop, name="ReminderLoop", daemon=True)
+            t.start()
+            _reminder_thread_started = True
 
 
 def set_reminder(data: dict):

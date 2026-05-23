@@ -70,7 +70,7 @@ _SCHEMA: dict[str, tuple] = {
     "tts_muted"             : (bool,  None, None),
 
     "llm_model"             : (str,   None, None),
-    "llm_temperature"       : (int,   0,    1),
+    "llm_temperature"       : (float, 0.0,  1.0),
     "llm_context_messages"  : (int,   2,    20),
 
     "memory_file"           : (str,   None, None),
@@ -142,7 +142,7 @@ class _Settings:
             if os.path.exists(tmp):
                 try:
                     os.remove(tmp)
-                except:
+                except OSError:
                     pass
 
     # ── Validation ────────────────────────────────────────────────────────────

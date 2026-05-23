@@ -27,6 +27,7 @@ psutil
 pyperclip
 requests
 scipy
+keyboard
 
 # ── Volume control (Windows only) ────────────────────────────────────────────
 pycaw; sys_platform == "win32"

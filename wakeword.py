@@ -18,6 +18,7 @@ Key behaviours:
 
 import threading
 import time
+import os
 
 import numpy as np
 import sounddevice as sd
@@ -44,9 +45,34 @@ def _cfg(key: str):
 
 # ── Model ─────────────────────────────────────────────────────────────────────
 
+def _resolve_model_path():
+    """Get full path to wake word model file."""
+    wake_word = settings.get("wake_word")
+
+    # Always use full path to the downloaded ONNX model in openwakeword resources
+    import openwakeword
+    model_dir = os.path.join(os.path.dirname(openwakeword.__file__), "resources", "models")
+    model_path = os.path.join(model_dir, f"{wake_word}_v0.1.onnx")
+
+    if os.path.exists(model_path):
+        return model_path
+
+    # Fallback to local assets if available
+    local_model = os.path.join(
+        os.path.dirname(__file__),
+        "assets",
+        "models",
+        f"{wake_word}_v0.1.onnx"
+    )
+    if os.path.exists(local_model):
+        return local_model
+
+    # Last resort: return model name and let openwakeword handle it
+    return wake_word
+
 print("[Numa] Loading wake word model...")
 _wake_model = Model(
-    wakeword_models     = [settings.get("wake_word")],
+    wakeword_models     = [_resolve_model_path()],
     inference_framework = "onnx",
 )
 print("[Numa] Wake word model ready.")
@@ -66,19 +92,39 @@ def start_wake_engine(on_wake_callback):
     Fires on_wake_callback in a daemon thread on confident wake detection.
     """
     global _last_trigger_time, _hit_count
+    _frame_count = [0]
 
     def _audio_callback(indata, frames, time_info, status):
         global _last_trigger_time, _hit_count
+        _frame_count[0] += 1
 
         audio      = np.frombuffer(indata, dtype=np.int16)
         prediction = _wake_model.predict(audio)
         now        = time.time()
-        score      = prediction.get(_cfg("wake_word"), 0)
+
+        # Get score - openwakeword returns predictions with model name as key (e.g., 'alexa_v0.1')
+        # First try exact wake word name, then try with _v0.1 suffix
+        wake_word = _cfg("wake_word")
+        score = prediction.get(wake_word, None)
+        if score is None:
+            # Try with _v0.1 suffix (standard openwakeword naming)
+            score = prediction.get(f"{wake_word}_v0.1", 0)
+        if score is None:
+            # Fallback: get first available prediction
+            score = next(iter(prediction.values())) if prediction else 0
+
+        # Debug: Show all scores to see model behavior
+        if _frame_count[0] % 50 == 0:
+            print(f"[Frame {_frame_count[0]:4d}] score={score:.4f} (max={max(prediction.values()) if prediction else 0:.4f}, all={prediction})")
 
         # Accumulate or reset confidence counter
         if score > _cfg("wake_threshold"):
             _hit_count += 1
+            if _hit_count == 1:
+                print(f"[Wake] Score {score:.3f} > {_cfg('wake_threshold')} - threshold crossed!")
         else:
+            if _hit_count > 0:
+                print(f"[Wake] Score {score:.3f} - streak broken, resetting")
             _hit_count = 0
 
         # How long since Numa last finished speaking
@@ -93,14 +139,14 @@ def start_wake_engine(on_wake_callback):
         if (
             _hit_count          >= _cfg("wake_required_hits")
             and (now - _last_trigger_time) > _cfg("wake_cooldown_sec")
-            and not state.is_processing()
             and not in_post_speech_win
         ):
             _last_trigger_time = now
             _hit_count         = 0
 
             _tts.interrupt()
-            state.set_processing(True)
+            if not state.try_start_processing():
+                return
             print("\n[Numa] Wake word detected!")
 
             threading.Thread(
