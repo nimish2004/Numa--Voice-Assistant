@@ -12,6 +12,7 @@ Walks user through:
 After completing, writes .env file and relaunches normal startup.
 """
 
+import logging
 import os
 import sys
 import subprocess
@@ -25,6 +26,8 @@ from PyQt6.QtWidgets import (
 )
 
 from config.settings import settings
+
+logger = logging.getLogger(__name__)
 
 
 # ── Check if onboarding needed ────────────────────────────────────────────────
@@ -51,7 +54,7 @@ def mark_onboarding_complete():
         with open(_onboarding_flag_path(), "w") as f:
             f.write("1")
     except Exception as e:
-        print(f"[Onboarding] Could not write flag: {e}")
+        logger.error(f"Could not write flag: {e}")
 
 
 def should_show_onboarding() -> bool:
@@ -72,7 +75,7 @@ def force_onboarding():
         try:
             os.remove(flag)
         except Exception as e:
-            print(f"[Onboarding] Could not remove flag: {e}")
+            logger.error(f"Could not remove flag: {e}")
 
 
 # ── Mic test thread ───────────────────────────────────────────────────────────
@@ -789,7 +792,7 @@ class OnboardingWindow(QWidget):
                 for k, v in existing.items():
                     f.write(f"{k}={v}\n")
         except Exception as e:
-            print(f"[Onboarding] Could not write .env: {e}")
+            logger.error(f"Could not write .env: {e}")
 
         # Save wake word to settings
         settings.set("wake_word", wake_word)

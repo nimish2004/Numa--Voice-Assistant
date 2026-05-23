@@ -13,11 +13,14 @@ Design decisions:
     Brave Search) and read top results aloud.
 """
 
+import logging
 import urllib.parse
 import webbrowser
 
 import requests
 from tts import speak
+
+logger = logging.getLogger(__name__)
 from config.settings import settings
 
 def _timeout() -> int:
@@ -65,7 +68,7 @@ def get_weather(data: dict):
             speak("I got an empty response from the weather service.")
             return
 
-        print(f"🌤️  Weather: {weather_text}")
+        logger.info(f"Weather: {weather_text}")
         speak(weather_text)
 
     except requests.Timeout:
@@ -75,9 +78,9 @@ def get_weather(data: dict):
         speak("I can't reach the weather service. Please check your internet connection.")
 
     except requests.HTTPError as e:
-        print(f"⚠️  Weather HTTP error: {e}")
+        logger.warning(f"Weather HTTP error: {e}")
         speak("The weather service returned an error. Try again shortly.")
 
     except Exception as e:
-        print(f"❌  Weather unexpected error: {e}")
+        logger.error(f"Weather unexpected error: {e}")
         speak("Something went wrong fetching the weather.")

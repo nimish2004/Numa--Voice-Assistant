@@ -17,6 +17,7 @@ Communication:
   This is the ONLY way background threads touch the UI.
 """
 
+import logging
 import sys
 import threading
 
@@ -26,6 +27,7 @@ from PyQt6.QtCore    import Qt
 
 import state
 from config.settings import settings
+from config.logging_setup import configure_logging
 from app.tray        import NumaTray
 from app.signals     import numa_signals
 from wakeword        import start_wake_engine
@@ -33,6 +35,8 @@ from speech          import listen_and_transcribe
 from llm_brain       import get_intent_llm
 from actions         import handle_intent
 from tts             import speak
+
+logger = logging.getLogger(__name__)
 
 # Disable pyautogui failsafe — moving mouse to corner would crash actions
 pyautogui.FAILSAFE = False
@@ -76,10 +80,10 @@ def on_wake():
         text = listen_and_transcribe()
 
         if not text or len(text.split()) < 2:
-            print("[Numa] Too short — ignoring.")
+            logger.info("Too short — ignoring.")
             return
 
-        print(f"[Numa] Heard: {text}")
+        logger.info(f"Heard: {text}")
         _emit(numa_signals.transcription_done, text)
         _emit(numa_signals.status_changed, "processing")
 
@@ -103,9 +107,7 @@ def on_wake():
                 speak(reply)
 
     except Exception as e:
-        print(f"[Numa] Error in on_wake: {e}")
-        import traceback
-        traceback.print_exc()
+        logger.error(f"Error in on_wake: {e}", exc_info=True)
         _emit(numa_signals.status_changed, "error")
 
     finally:
@@ -129,6 +131,9 @@ def _start_engine():
 # ── Entry point ───────────────────────────────────────────────────────────────
 
 def main():
+    # Configure logging early
+    configure_logging(settings.get("log_level"))
+
     QApplication.setHighDpiScaleFactorRoundingPolicy(
         Qt.HighDpiScaleFactorRoundingPolicy.PassThrough
     )
@@ -149,16 +154,16 @@ def main():
 
     # Normal launch — start engine + tray
     _start_engine()
-    print("[Numa] Engine started.")
+    logger.info("Engine started.")
 
     tray = NumaTray(app)
     numa_signals.quit_requested.connect(app.quit)
 
-    print("[Numa] Ready. Say the wake word to begin.")
+    logger.info("Ready. Say the wake word to begin.")
     exit_code = app.exec()
 
     state.stop()
-    print("[Numa] Shutdown complete.")
+    logger.info("Shutdown complete.")
     sys.exit(exit_code)
 
 

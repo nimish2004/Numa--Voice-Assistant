@@ -21,11 +21,14 @@ Usage (in any module):
 """
 
 import json
+import logging
 import os
 import threading
 from typing import Any
 
 from config.defaults import DEFAULTS
+
+logger = logging.getLogger(__name__)
 
 
 # ── Storage location ──────────────────────────────────────────────────────────
@@ -119,7 +122,7 @@ class _Settings:
                     with open(SETTINGS_FILE, "r", encoding="utf-8") as f:
                         loaded = json.load(f)
                 except Exception as e:
-                    print(f"⚠️  Settings file unreadable ({e}) — using defaults.")
+                    logger.warning(f"Settings file unreadable ({e}) — using defaults.")
 
             # Merge: loaded values override defaults, missing keys get defaults
             self._data = {**DEFAULTS, **loaded}
@@ -127,7 +130,7 @@ class _Settings:
             # Remove any keys that no longer exist in schema (stale settings)
             stale = [k for k in self._data if k not in DEFAULTS]
             for k in stale:
-                print(f"⚠️  Removing stale setting: '{k}'")
+                logger.warning(f"Removing stale setting: '{k}'")
                 del self._data[k]
 
     def _save(self):
@@ -138,7 +141,7 @@ class _Settings:
                 json.dump(self._data, f, indent=2, ensure_ascii=False)
             os.replace(tmp, SETTINGS_FILE)
         except Exception as e:
-            print(f"❌  Could not save settings: {e}")
+            logger.error(f"Could not save settings: {e}")
             if os.path.exists(tmp):
                 try:
                     os.remove(tmp)
@@ -212,14 +215,14 @@ class _Settings:
         """
         valid, reason = self._validate(key, value)
         if not valid:
-            print(f"❌  Invalid setting — {reason}")
+            logger.error(f"Invalid setting — {reason}")
             return False, reason
 
         with self._lock:
             self._data[key] = value
             self._save()
 
-        print(f"✅  Setting updated: {key} = {value!r}")
+        logger.info(f"Setting updated: {key} = {value!r}")
         return True, ""
 
     def reload(self):
@@ -229,14 +232,14 @@ class _Settings:
         """
         with self._lock:
             self._load()
-        print("✅  Settings reloaded.")
+        logger.info("Settings reloaded.")
 
     def reset_to_defaults(self):
         """Wipe user settings and restore factory defaults."""
         with self._lock:
             self._data = dict(DEFAULTS)
             self._save()
-        print("✅  Settings reset to defaults.")
+        logger.info("Settings reset to defaults.")
 
     def all(self) -> dict:
         """Return a copy of all current settings (for UI display / debug)."""

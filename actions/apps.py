@@ -16,8 +16,11 @@ Design:
     window close events which apps can swallow.
 """
 
+import logging
 import subprocess
 import psutil
+
+logger = logging.getLogger(__name__)
 from tts import speak
 
 
@@ -72,7 +75,7 @@ def _launch(cmd: list[str], app_display_name: str):
     except FileNotFoundError:
         speak(f"I couldn't find {app_display_name} on this system.")
     except Exception as e:
-        print(f"❌  Launch error for {app_display_name}: {e}")
+        logger.error(f"Launch error for {app_display_name}: {e}")
         speak(f"Something went wrong opening {app_display_name}.")
 
 
@@ -128,7 +131,7 @@ def open_app(data: dict):
     else:
         # App not in allowlist — refuse with explanation
         speak(f"I don't have {raw} in my app list. You can ask me to add it.")
-        print(f"⚠️  App not in registry: '{raw}'")
+        logger.warning(f"App not in registry: '{raw}'")
 
 
 # ── Close app ─────────────────────────────────────────────────────────────────

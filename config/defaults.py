@@ -10,6 +10,24 @@ Rules:
     schema with the same name.
 """
 
+import os
+
+
+def _appdata_path(filename: str) -> str:
+    """
+    Resolve a filename to %APPDATA%\Numa\ on Windows.
+    Falls back to project root if APPDATA is unavailable.
+    Creates the directory if it doesn't exist.
+    """
+    appdata = os.environ.get("APPDATA", "")
+    if appdata:
+        folder = os.path.join(appdata, "Numa")
+    else:
+        folder = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    os.makedirs(folder, exist_ok=True)
+    return os.path.join(folder, filename)
+
+
 DEFAULTS: dict = {
 
     # ── Wake word ─────────────────────────────────────────────────────────────
@@ -25,7 +43,7 @@ DEFAULTS: dict = {
     "stt_max_record_sec"    : 10,
     "stt_min_audio_sec"     : 0.4,
     "stt_noise_multiplier"  : 3.5,
-    "calibration_file"      : "calibration.json",
+    "calibration_file"      : _appdata_path("calibration.json"),
 
     # ── TTS ───────────────────────────────────────────────────────────────────
     "tts_voice"             : "en-US-BrianNeural",
@@ -39,7 +57,7 @@ DEFAULTS: dict = {
     "llm_context_messages"  : 6,        # recent messages sent to LLM
 
     # ── Memory ────────────────────────────────────────────────────────────────
-    "memory_file"           : "memory.json",
+    "memory_file"           : _appdata_path("memory.json"),
     "memory_max_history"    : 20,
 
     # ── System actions ────────────────────────────────────────────────────────

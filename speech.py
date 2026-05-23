@@ -14,6 +14,7 @@ Key design decisions:
 """
 
 import json
+import logging
 import os
 import threading
 import time
@@ -23,6 +24,8 @@ import sounddevice as sd
 import whisper
 
 from config.settings import settings
+
+logger = logging.getLogger(__name__)
 
 # ── Config (read from settings — never hardcode here) ─────────────────────────
 
@@ -34,9 +37,9 @@ def _cfg(key: str):
 
 # ── Whisper model ─────────────────────────────────────────────────────────────
 
-print("[Loading] Whisper model...")
+logger.info("Loading Whisper model...")
 _whisper_model = whisper.load_model(settings.get("whisper_model"))
-print("[OK] Whisper ready.")
+logger.info("Whisper ready.")
 
 # ── Calibration ───────────────────────────────────────────────────────────────
 
@@ -45,7 +48,7 @@ def _run_calibration() -> tuple[float, float]:
     Sample ambient noise for ~1 second and compute thresholds.
     Returns (silence_threshold, mic_off_threshold).
     """
-    print("[Calibrating] Microphone — stay silent...")
+    logger.info("Calibrating microphone — stay silent...")
     samples = []
 
     for _ in range(15):
@@ -67,9 +70,9 @@ def _run_calibration() -> tuple[float, float]:
         with open(_cfg("calibration_file"), "w") as f:
             json.dump(result, f, indent=2)
     except Exception as e:
-        print(f"⚠️  Could not cache calibration: {e}")
+        logger.warning(f"Could not cache calibration: {e}")
 
-    print(f"   Baseline: {baseline:.6f}  |  Threshold: {silence_threshold:.6f}")
+    logger.info(f"Baseline: {baseline:.6f} | Threshold: {silence_threshold:.6f}")
     return silence_threshold, mic_off_threshold
 
 
@@ -83,7 +86,7 @@ def _load_calibration() -> tuple[float, float] | None:
             data = json.load(f)
         st = data["silence_threshold"]
         mo = data["mic_off_threshold"]
-        print(f"[OK] Calibration loaded from cache (threshold: {st:.6f})")
+        logger.info(f"Calibration loaded from cache (threshold: {st:.6f})")
         return st, mo
     except Exception:
         return None
@@ -102,7 +105,7 @@ def calibrate(force: bool = False) -> tuple[float, float]:
 
 
 # Load at module import — fast on second run (cache hit)
-SILENCE_THRESHOLD, MIC_OFF_THRESHOLD = calibrate()
+SILENCE_THRESHOLD, _ = calibrate()
 
 
 # ── Audio feedback ─────────────────────────────────────────────────────────────
@@ -174,21 +177,21 @@ def listen_and_transcribe() -> str:
       - Audio was too short (mic glitch / noise burst)
       - Whisper returned an empty string
     """
-    print("\n🎤  Listening...")
+    logger.info("Listening...")
     _beep(800, 100)   # ready tone
 
     recording = _record_audio()
 
     if recording is None:
-        print("⚠️  No audio captured.")
+        logger.warning("No audio captured.")
         return ""
 
     duration = len(recording) / SAMPLE_RATE
     if duration < _cfg("stt_min_audio_sec"):
-        print(f"⚠️  Audio too short ({duration:.2f}s) — discarding.")
+        logger.warning(f"Audio too short ({duration:.2f}s) — discarding.")
         return ""
 
-    print(f"🧠  Transcribing ({duration:.1f}s of audio)...")
+    logger.info(f"Transcribing ({duration:.1f}s of audio)...")
 
     try:
         result = _whisper_model.transcribe(
@@ -199,11 +202,11 @@ def listen_and_transcribe() -> str:
         )
         text = result["text"].strip().lower()
     except Exception as e:
-        print(f"❌  Whisper error: {e}")
+        logger.error(f"Whisper error: {e}")
         return ""
 
     _beep(1200, 100)  # done tone
-    print(f"🗣️  Heard: \"{text}\"")
+    logger.info(f"Heard: \"{text}\"")
     return text
 
 
@@ -212,6 +215,6 @@ def recalibrate():
     Force a fresh microphone calibration and update module-level thresholds.
     Called via voice command: 'recalibrate microphone'.
     """
-    global SILENCE_THRESHOLD, MIC_OFF_THRESHOLD
-    SILENCE_THRESHOLD, MIC_OFF_THRESHOLD = calibrate(force=True)
-    print("[OK] Recalibration complete.")
+    global SILENCE_THRESHOLD
+    SILENCE_THRESHOLD, _ = calibrate(force=True)
+    logger.info("Recalibration complete.")

@@ -15,6 +15,7 @@ All timers and reminders survive for the session only (in-memory).
 A future premium feature can persist them across reboots via Supabase.
 """
 
+import logging
 import subprocess
 import threading
 import time
@@ -23,6 +24,8 @@ from typing import Optional
 
 import pyperclip
 from tts import speak
+
+logger = logging.getLogger(__name__)
 
 
 # ── Timer ─────────────────────────────────────────────────────────────────────
@@ -37,7 +40,7 @@ def _timer_fired(label: str):
     with _timers_lock:
         _active_timers.pop(label, None)
     speak(f"Timer done! {label}")
-    print(f"⏰  Timer fired: {label}")
+    logger.info(f"Timer fired: {label}")
 
 
 def set_timer(data: dict):
@@ -82,7 +85,7 @@ def set_timer(data: dict):
         duration_str = f"{seconds} second{'s' if seconds > 1 else ''}"
 
     speak(f"{label} timer set for {duration_str}.")
-    print(f"⏱️  Timer set: '{label}' → {seconds}s")
+    logger.info(f"Timer set: '{label}' → {seconds}s")
 
 
 def cancel_timer(data: dict):
@@ -128,7 +131,7 @@ def _reminder_loop():
 
         for r in fired:
             speak(f"Reminder: {r['message']}")
-            print(f"🔔  Reminder fired: {r['message']}")
+            logger.info(f"Reminder fired: {r['message']}")
 
         time.sleep(30)
 
@@ -187,7 +190,7 @@ def set_reminder(data: dict):
 
     time_str = target.strftime("%I:%M %p")
     speak(f"I'll remind you to {message} at {time_str}.")
-    print(f"🔔  Reminder set: '{message}' at {target}")
+    logger.info(f"Reminder set: '{message}' at {target}")
 
 
 # ── Clipboard ─────────────────────────────────────────────────────────────────
@@ -207,7 +210,7 @@ def read_clipboard(data: dict):
             speak(f"Your clipboard contains: {content.strip()}")
 
     except Exception as e:
-        print(f"❌  Clipboard read error: {e}")
+        logger.error(f"Clipboard read error: {e}")
         speak("I couldn't read your clipboard.")
 
 
@@ -217,7 +220,7 @@ def clear_clipboard(data: dict):
         pyperclip.copy("")
         speak("Clipboard cleared.")
     except Exception as e:
-        print(f"❌  Clipboard clear error: {e}")
+        logger.error(f"Clipboard clear error: {e}")
         speak("I couldn't clear the clipboard.")
 
 
@@ -262,12 +265,12 @@ def git_status(data: dict):
 
         summary = ", ".join(parts) if parts else f"{len(lines)} changes"
         speak(f"Git status: {summary}.")
-        print(result.stdout)
+        logger.debug(result.stdout)
 
     except subprocess.TimeoutExpired:
         speak("Git took too long to respond.")
     except FileNotFoundError:
         speak("Git is not installed or not in your system path.")
     except Exception as e:
-        print(f"❌  Git error: {e}")
+        logger.error(f"Git error: {e}")
         speak("I couldn't run git status.")

@@ -11,9 +11,12 @@ Adding a new intent = two steps:
   That's it. No other file needs to change.
 """
 
+import logging
 import state
 from tts import speak
 from memory import clear_memory
+
+logger = logging.getLogger(__name__)
 
 from actions.media        import play_music, pause_music, next_track, prev_track
 from actions.apps         import (
@@ -54,7 +57,7 @@ def _exit_app(data: dict):
 def _toggle_mute(data: dict):
     muted = state.toggle_mute()
     if muted:
-        print("🔇  Numa muted.")      # can't speak when muted — print only
+        logger.info("Numa muted.")     # can't speak when muted — log only
     else:
         speak("I'm back.")
 

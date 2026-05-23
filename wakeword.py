@@ -16,6 +16,7 @@ Key behaviours:
     User doesn't need to wait for Numa to finish talking.
 """
 
+import logging
 import threading
 import time
 import os
@@ -27,6 +28,8 @@ from openwakeword.model import Model
 import state
 import tts as _tts
 from config.settings import settings
+
+logger = logging.getLogger(__name__)
 
 
 # ── Config ────────────────────────────────────────────────────────────────────
@@ -70,12 +73,12 @@ def _resolve_model_path():
     # Last resort: return model name and let openwakeword handle it
     return wake_word
 
-print("[Numa] Loading wake word model...")
+logger.info("Loading wake word model...")
 _wake_model = Model(
     wakeword_models     = [_resolve_model_path()],
     inference_framework = "onnx",
 )
-print("[Numa] Wake word model ready.")
+logger.info("Wake word model ready.")
 
 
 # ── Internal state ────────────────────────────────────────────────────────────
@@ -113,18 +116,14 @@ def start_wake_engine(on_wake_callback):
             # Fallback: get first available prediction
             score = next(iter(prediction.values())) if prediction else 0
 
-        # Debug: Show all scores to see model behavior
-        if _frame_count[0] % 50 == 0:
-            print(f"[Frame {_frame_count[0]:4d}] score={score:.4f} (max={max(prediction.values()) if prediction else 0:.4f}, all={prediction})")
-
         # Accumulate or reset confidence counter
         if score > _cfg("wake_threshold"):
             _hit_count += 1
             if _hit_count == 1:
-                print(f"[Wake] Score {score:.3f} > {_cfg('wake_threshold')} - threshold crossed!")
+                logger.debug(f"Score {score:.3f} > {_cfg('wake_threshold')} - threshold crossed!")
         else:
             if _hit_count > 0:
-                print(f"[Wake] Score {score:.3f} - streak broken, resetting")
+                logger.debug(f"Score {score:.3f} - streak broken, resetting")
             _hit_count = 0
 
         # How long since Numa last finished speaking
@@ -147,7 +146,7 @@ def start_wake_engine(on_wake_callback):
             _tts.interrupt()
             if not state.try_start_processing():
                 return
-            print("\n[Numa] Wake word detected!")
+            logger.info("Wake word detected!")
 
             threading.Thread(
                 target = on_wake_callback,
@@ -155,7 +154,7 @@ def start_wake_engine(on_wake_callback):
                 daemon = True,
             ).start()
 
-    print("[Numa] Listening for wake word...")
+    logger.info("Listening for wake word...")
 
     try:
         with sd.RawInputStream(
@@ -171,4 +170,4 @@ def start_wake_engine(on_wake_callback):
     except KeyboardInterrupt:
         pass
     except Exception as e:
-        print(f"[Numa] Wake engine error: {e}")
+        logger.error(f"Wake engine error: {e}")

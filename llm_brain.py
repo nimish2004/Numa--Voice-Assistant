@@ -35,6 +35,7 @@ RATE LIMIT HANDLING:
   - Rule engine carries full load during cooldown.
 """
 
+import logging
 import os
 import json
 import re
@@ -47,6 +48,8 @@ from google.genai import types
 from memory import add_exchange, get_recent
 from brain import get_intent as rule_based_intent
 from config.settings import settings
+
+logger = logging.getLogger(__name__)
 
 
 def _cfg(key: str):
@@ -72,7 +75,7 @@ def _set_rate_limit(error: Exception):
     except Exception:
         pass
     _gemini_available_at = time.time() + delay
-    print(f"[Numa] Gemini quota hit. Rule engine active for {int(delay)}s.")
+    logger.warning(f"Gemini quota hit. Rule engine active for {int(delay)}s.")
 
 
 # ── API client ────────────────────────────────────────────────────────────────
@@ -81,7 +84,7 @@ load_dotenv()
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 if not GEMINI_API_KEY:
-    print("[Numa] WARNING: GEMINI_API_KEY not found - rule engine only.")
+    logger.warning("GEMINI_API_KEY not found - rule engine only.")
     _client = None
 else:
     _client = genai.Client(api_key=GEMINI_API_KEY)

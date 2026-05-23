@@ -16,11 +16,14 @@ Design decisions:
 """
 
 import json
+import logging
 import os
 import threading
 from datetime import datetime, timezone
 
 from config.settings import settings
+
+logger = logging.getLogger(__name__)
 
 # ── Config (always read live from settings) ───────────────────────────────────
 
@@ -43,7 +46,7 @@ def _load() -> list:
             if isinstance(data, list):
                 return data
     except Exception as e:
-        print(f"⚠️  Memory load error: {e} — starting fresh.")
+        logger.warning(f"Memory load error: {e} — starting fresh.")
     return []
 
 
@@ -56,7 +59,7 @@ def _save(history: list):
             json.dump(history, f, indent=2, ensure_ascii=False)
         os.replace(tmp, mem_file)
     except Exception as e:
-        print(f"❌  Memory save error: {e}")
+        logger.error(f"Memory save error: {e}")
         if os.path.exists(tmp):
             try:
                 os.remove(tmp)
@@ -136,4 +139,4 @@ def clear_memory():
     """Wipe all history — called by the 'forget everything' voice command."""
     with _lock:
         _save([])
-    print("🧹  Memory cleared.")
+    logger.info("Memory cleared.")

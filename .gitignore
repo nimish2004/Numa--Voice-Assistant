@@ -1,7 +1,38 @@
+# Python
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
+*.egg-info/
+.pytest_cache/
+
+# Virtual environments
+.venv/
+venv/
+
+# Environment
 .env
+
+# Audio files
+*.wav
 command.wav
 
+# Configuration & data
+calibration.json
+memory.json
+numa_settings.json
+
+# Logs
+*.log
+
+# Models
+assets/models/
+assests/models/
+*.onnx
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~

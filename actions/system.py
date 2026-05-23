@@ -16,6 +16,7 @@ Notes:
 """
 
 import datetime
+import logging
 import os
 import subprocess
 
@@ -23,6 +24,8 @@ import psutil
 import pyautogui
 from tts import speak
 from config.settings import settings
+
+logger = logging.getLogger(__name__)
 
 def _cfg(key: str):
     return settings.get(key)
@@ -40,7 +43,7 @@ def _set_volume_pycaw(percent: int):
         volume.SetMasterVolumeLevelScalar(scalar, None)
         return True
     except Exception as e:
-        print(f"⚠️  pycaw volume error: {e}")
+        logger.warning(f"pycaw volume error: {e}")
         return False
 
 
@@ -106,9 +109,9 @@ def take_screenshot(data: dict):
         img = pyautogui.screenshot()
         img.save(filename)
         speak("Screenshot saved to your Pictures folder.")
-        print(f"📸  Saved: {filename}")
+        logger.info(f"Saved: {filename}")
     except Exception as e:
-        print(f"❌  Screenshot error: {e}")
+        logger.error(f"Screenshot error: {e}")
         speak("I couldn't take a screenshot.")
 
 

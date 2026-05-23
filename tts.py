@@ -19,6 +19,7 @@ Key behaviours:
 """
 
 import asyncio
+import logging
 import os
 import tempfile
 import threading
@@ -27,6 +28,8 @@ import time
 import pygame
 import state
 from config.settings import settings
+
+logger = logging.getLogger(__name__)
 
 
 # ── Config ────────────────────────────────────────────────────────────────────
@@ -64,7 +67,7 @@ def _ensure_mixer():
         pygame.mixer.init()
         _mixer_ready = True
     except Exception as e:
-        print(f"[TTS] pygame.mixer init failed: {e}")
+        logger.error(f"pygame.mixer init failed: {e}")
 
 
 # ── Persistent asyncio event loop (edge-tts) ──────────────────────────────────
@@ -94,7 +97,7 @@ def _get_pyttsx3():
                 _pyttsx3_engine.setProperty("rate", 175)
                 _pyttsx3_engine.setProperty("volume", 1.0)
             except Exception as e:
-                print(f"[TTS] pyttsx3 init failed: {e}")
+                logger.error(f"pyttsx3 init failed: {e}")
         return _pyttsx3_engine
 
 
@@ -118,7 +121,7 @@ def _play_mp3(path: str):
                 pygame.time.wait(50)
             pygame.mixer.music.unload()
         except Exception as e:
-            print(f"[TTS] pygame playback error: {e}")
+            logger.error(f"pygame playback error: {e}")
 
 
 def _speak_edge(text: str) -> bool:
@@ -136,7 +139,7 @@ def _speak_edge(text: str) -> bool:
         return True
 
     except Exception as e:
-        print(f"[TTS] edge-tts error: {e}")
+        logger.error(f"edge-tts error: {e}")
         return False
 
     finally:
@@ -151,14 +154,14 @@ def _speak_pyttsx3(text: str):
     """Speak via pyttsx3 (fully offline fallback)."""
     engine = _get_pyttsx3()
     if engine is None:
-        print("[TTS] No TTS engine available.")
+        logger.error("No TTS engine available.")
         return
     try:
         with _playback_lock:
             engine.say(text)
             engine.runAndWait()
     except Exception as e:
-        print(f"[TTS] pyttsx3 error: {e}")
+        logger.error(f"pyttsx3 error: {e}")
 
 
 # ── Public interface ───────────────────────────────────────────────────────────
@@ -174,15 +177,15 @@ def speak(text: str):
     if not text or not text.strip():
         return
 
-    print(f"[Numa] {text}")
+    logger.info(f"Speaking: {text}")
 
     if state.is_muted():
-        print("[TTS] (muted)")
+        logger.debug("(muted)")
         return
 
     success = _speak_edge(text)
     if not success:
-        print("[TTS] Falling back to offline TTS...")
+        logger.info("Falling back to offline TTS...")
         _speak_pyttsx3(text)
 
     # Record when speech finished - wakeword.py uses this
@@ -211,6 +214,6 @@ def set_voice(short_name: str):
     """Change the edge-tts voice and persist to settings."""
     ok, err = settings.set("tts_voice", short_name)
     if ok:
-        print(f"[TTS] Voice changed to: {short_name}")
+        logger.info(f"Voice changed to: {short_name}")
     else:
-        print(f"[TTS] Could not change voice: {err}")
+        logger.warning(f"Could not change voice: {err}")
