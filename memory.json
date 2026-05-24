@@ -1,36 +1,6 @@
 [
   {
     "role": "user",
-    "content": "can you open a lamp or clock?",
-    "timestamp": "2026-05-22T17:24:13+00:00"
-  },
-  {
-    "role": "assistant",
-    "content": "[task: lock_laptop]",
-    "timestamp": "2026-05-22T17:24:13+00:00"
-  },
-  {
-    "role": "user",
-    "content": "can you tell me the time?",
-    "timestamp": "2026-05-22T17:25:11+00:00"
-  },
-  {
-    "role": "assistant",
-    "content": "[task: tell_time]",
-    "timestamp": "2026-05-22T17:25:11+00:00"
-  },
-  {
-    "role": "user",
-    "content": "how are you? exit the system.",
-    "timestamp": "2026-05-22T17:25:39+00:00"
-  },
-  {
-    "role": "assistant",
-    "content": "[task: exit]",
-    "timestamp": "2026-05-22T17:25:39+00:00"
-  },
-  {
-    "role": "user",
     "content": "open chrome",
     "timestamp": "2026-05-23T07:32:14+00:00"
   },
@@ -98,5 +68,35 @@
     "role": "assistant",
     "content": "[task: exit]",
     "timestamp": "2026-05-23T17:26:10+00:00"
+  },
+  {
+    "role": "user",
+    "content": "can you please play the music?",
+    "timestamp": "2026-05-23T17:41:13+00:00"
+  },
+  {
+    "role": "assistant",
+    "content": "[task: play_music]",
+    "timestamp": "2026-05-23T17:41:13+00:00"
+  },
+  {
+    "role": "user",
+    "content": "please stop the music.",
+    "timestamp": "2026-05-23T17:41:32+00:00"
+  },
+  {
+    "role": "assistant",
+    "content": "[task: pause_music]",
+    "timestamp": "2026-05-23T17:41:32+00:00"
+  },
+  {
+    "role": "user",
+    "content": "exit the system.",
+    "timestamp": "2026-05-23T17:41:58+00:00"
+  },
+  {
+    "role": "assistant",
+    "content": "[task: exit]",
+    "timestamp": "2026-05-23T17:41:58+00:00"
   }
 ]
