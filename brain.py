@@ -44,6 +44,25 @@ def _extract_number(text: str) -> int | None:
     return None
 
 
+def _extract_app_name(text: str) -> str | None:
+    """
+    Extract app name from "open [app]" pattern.
+    Examples: "open docker" → "docker", "open the door" → "door"
+    Returns the first word after "open" (ignoring "the", "a").
+    """
+    words = text.lower().split()
+    try:
+        open_idx = words.index("open")
+        # Look for the next word after "open" that isn't a filler
+        for i in range(open_idx + 1, len(words)):
+            word = words[i].strip('.,?!')
+            if word and word not in ("the", "a", "an", "please", "could", "can", "you"):
+                return word
+    except (ValueError, IndexError):
+        pass
+    return None
+
+
 # ── Intent resolver ───────────────────────────────────────────────────────────
 
 def get_intent(text: str) -> str | dict:
@@ -122,8 +141,10 @@ def get_intent(text: str) -> str | dict:
     if _any(text, "terminal", "command prompt", "cmd") and _has(text, "open"):
         return "open_terminal"
 
-    if _has(text, "open") and _any(text, "app", "program", "application"):
-        return "open_app"
+    if _has(text, "open"):
+        app_name = _extract_app_name(text)
+        if app_name:
+            return {"type": "task", "intent": "open_app", "parameters": {"app": app_name}}
 
     if _any(text, "refresh apps", "update apps", "rescan apps", "scan apps"):
         return "refresh_app_cache"
