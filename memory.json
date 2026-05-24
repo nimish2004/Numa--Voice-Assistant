@@ -1,102 +1,102 @@
 [
   {
     "role": "user",
-    "content": "can you please set volume to 50?",
-    "timestamp": "2026-05-23T17:24:15+00:00"
-  },
-  {
-    "role": "assistant",
-    "content": "[task: set_volume]",
-    "timestamp": "2026-05-23T17:24:15+00:00"
-  },
-  {
-    "role": "user",
-    "content": "exit the system.",
-    "timestamp": "2026-05-23T17:26:10+00:00"
+    "content": "good bye. exit the system. system.",
+    "timestamp": "2026-05-24T08:54:05+00:00"
   },
   {
     "role": "assistant",
     "content": "[task: exit]",
-    "timestamp": "2026-05-23T17:26:10+00:00"
+    "timestamp": "2026-05-24T08:54:05+00:00"
   },
   {
     "role": "user",
-    "content": "can you please play the music?",
-    "timestamp": "2026-05-23T17:41:13+00:00"
+    "content": "open spotify.",
+    "timestamp": "2026-05-24T09:27:36+00:00"
   },
   {
     "role": "assistant",
-    "content": "[task: play_music]",
-    "timestamp": "2026-05-23T17:41:13+00:00"
+    "content": "[task: open_spotify]",
+    "timestamp": "2026-05-24T09:27:36+00:00"
   },
   {
     "role": "user",
-    "content": "please stop the music.",
-    "timestamp": "2026-05-23T17:41:32+00:00"
+    "content": "open x box.",
+    "timestamp": "2026-05-24T09:27:52+00:00"
   },
   {
     "role": "assistant",
-    "content": "[task: pause_music]",
-    "timestamp": "2026-05-23T17:41:32+00:00"
+    "content": "[task: open_app]",
+    "timestamp": "2026-05-24T09:27:52+00:00"
   },
   {
     "role": "user",
-    "content": "exit the system.",
-    "timestamp": "2026-05-23T17:41:58+00:00"
+    "content": "open x box",
+    "timestamp": "2026-05-24T09:28:12+00:00"
   },
   {
     "role": "assistant",
-    "content": "[task: exit]",
-    "timestamp": "2026-05-23T17:41:58+00:00"
+    "content": "[task: open_app]",
+    "timestamp": "2026-05-24T09:28:12+00:00"
   },
   {
     "role": "user",
-    "content": "exit the system.",
-    "timestamp": "2026-05-24T08:00:53+00:00"
+    "content": "open burrow",
+    "timestamp": "2026-05-24T09:28:56+00:00"
   },
   {
     "role": "assistant",
-    "content": "[task: exit]",
-    "timestamp": "2026-05-24T08:00:53+00:00"
+    "content": "[task: open_app]",
+    "timestamp": "2026-05-24T09:28:56+00:00"
   },
   {
     "role": "user",
-    "content": "can you tell me about the weather?",
-    "timestamp": "2026-05-24T08:01:50+00:00"
+    "content": "open excel",
+    "timestamp": "2026-05-24T09:29:37+00:00"
   },
   {
     "role": "assistant",
-    "content": "[task: get_weather]",
-    "timestamp": "2026-05-24T08:01:50+00:00"
+    "content": "[task: open_app]",
+    "timestamp": "2026-05-24T09:29:37+00:00"
   },
   {
     "role": "user",
-    "content": "can you open the terminal?",
-    "timestamp": "2026-05-24T08:02:57+00:00"
+    "content": "open docker.",
+    "timestamp": "2026-05-24T09:30:07+00:00"
   },
   {
     "role": "assistant",
-    "content": "[task: open_terminal]",
-    "timestamp": "2026-05-24T08:02:57+00:00"
+    "content": "[task: open_app]",
+    "timestamp": "2026-05-24T09:30:07+00:00"
   },
   {
     "role": "user",
-    "content": "can you tell me the weather all time?",
-    "timestamp": "2026-05-24T08:06:07+00:00"
+    "content": "open docker, this is deck next stop.",
+    "timestamp": "2026-05-24T09:30:30+00:00"
   },
   {
     "role": "assistant",
-    "content": "[task: tell_time]",
-    "timestamp": "2026-05-24T08:06:07+00:00"
+    "content": "[task: open_app]",
+    "timestamp": "2026-05-24T09:30:30+00:00"
   },
   {
     "role": "user",
-    "content": "exit the system.",
-    "timestamp": "2026-05-24T08:08:45+00:00"
+    "content": "open docker desktop.",
+    "timestamp": "2026-05-24T09:30:50+00:00"
   },
   {
     "role": "assistant",
-    "content": "[task: exit]",
-    "timestamp": "2026-05-24T08:08:45+00:00"
+    "content": "[task: open_app]",
+    "timestamp": "2026-05-24T09:30:50+00:00"
+  },
+  {
+    "role": "user",
+    "content": "open postman.",
+    "timestamp": "2026-05-24T09:31:57+00:00"
+  },
+  {
+    "role": "assistant",
+    "content": "[task: open_app]",
+    "timestamp": "2026-05-24T09:31:57+00:00"
   }
 ]

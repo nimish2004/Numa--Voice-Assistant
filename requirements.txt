@@ -8,6 +8,7 @@
 google-genai
 openai-whisper
 python-dotenv
+rapidfuzz>=3.0
 
 # ── Wake word detection ───────────────────────────────────────────────────────
 openwakeword
