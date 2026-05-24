@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 from actions.media        import play_music, pause_music, next_track, prev_track
 from actions.apps         import (
     open_chrome, open_spotify, open_vscode, open_notepad,
-    open_youtube, open_terminal, open_app, close_app,
+    open_youtube, open_terminal, open_app, close_app, refresh_app_cache,
 )
 from actions.system       import (
     mute, volume_up, volume_down, set_volume,
@@ -90,6 +90,7 @@ INTENT_MAP: dict[str, callable] = {
     "open_terminal"     : open_terminal,
     "open_app"          : open_app,
     "close_app"         : close_app,
+    "refresh_app_cache" : refresh_app_cache,
 
     # ── System ────────────────────────────────────────────────────────────
     "lock_laptop"       : lock_laptop,

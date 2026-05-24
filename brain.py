@@ -125,6 +125,9 @@ def get_intent(text: str) -> str | dict:
     if _has(text, "open") and _any(text, "app", "program", "application"):
         return "open_app"
 
+    if _any(text, "refresh apps", "update apps", "rescan apps", "scan apps"):
+        return "refresh_app_cache"
+
     # ── VOLUME — parameterised (must come before up/down rules) ───────────────
     # "set volume to 80", "volume at 50%", "set it to 60 percent"
     if _any(text, "set volume", "volume to", "volume at") or (

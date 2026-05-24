@@ -35,6 +35,7 @@ from speech          import listen_and_transcribe
 from llm_brain       import get_intent_llm
 from actions         import handle_intent
 from tts             import speak
+from actions.app_scanner import start_background_scan
 
 logger = logging.getLogger(__name__)
 
@@ -154,6 +155,7 @@ def main():
 
     # Normal launch — start engine + tray
     _start_engine()
+    start_background_scan()
     logger.info("Engine started.")
 
     tray = NumaTray(app)

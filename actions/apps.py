@@ -22,6 +22,7 @@ import psutil
 
 logger = logging.getLogger(__name__)
 from tts import speak
+from actions.app_scanner import find_app, refresh_cache
 
 
 # ── Known app registry ────────────────────────────────────────────────────────
@@ -129,9 +130,15 @@ def open_app(data: dict):
         speak(f"Opening {raw}.")
         _launch(cmd, raw)
     else:
-        # App not in allowlist — refuse with explanation
-        speak(f"I don't have {raw} in my app list. You can ask me to add it.")
-        logger.warning(f"App not in registry: '{raw}'")
+        # Try dynamic discovery
+        result = find_app(raw)
+        if result:
+            matched_name, path = result
+            speak(f"Opening {raw}.")
+            _launch(["cmd", "/c", "start", "", path], raw)
+        else:
+            speak(f"I couldn't find {raw} installed on this system.")
+            logger.warning(f"App not found in registry or system: '{raw}'")
 
 
 # ── Close app ─────────────────────────────────────────────────────────────────
@@ -155,7 +162,25 @@ def close_app(data: dict):
     _, proc_name = APP_REGISTRY.get(key, (None, ""))
 
     if not proc_name:
-        speak(f"I don't know how to close {raw}.")
+        # Try dynamic discovery: match running processes by exe path
+        result = find_app(raw)
+        if not result:
+            speak(f"I don't know how to close {raw}.")
+            return
+        _, app_path = result
+        app_path_lower = app_path.lower()
+        killed = False
+        for proc in psutil.process_iter(["name", "exe", "pid"]):
+            try:
+                if proc.info["exe"] and proc.info["exe"].lower() == app_path_lower:
+                    proc.terminate()
+                    killed = True
+            except (psutil.NoSuchProcess, psutil.AccessDenied):
+                pass
+        if killed:
+            speak(f"Closed {raw}.")
+        else:
+            speak(f"{raw} doesn't appear to be running.")
         return
 
     killed = False
@@ -174,3 +199,11 @@ def close_app(data: dict):
         speak(f"Closed {raw}.")
     else:
         speak(f"{raw} doesn't appear to be running.")
+
+
+# ── App cache management ──────────────────────────────────────────────────────
+
+def refresh_app_cache(data: dict):
+    """Trigger a fresh scan of installed apps."""
+    speak("Scanning for installed apps. This will take a moment.")
+    refresh_cache()
